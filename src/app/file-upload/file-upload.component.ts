@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { ICustomer } from '../interfaces/customer';
+import { CustomerDataService } from '../customer-data.service';
 
 @Component({
   selector: 'app-file-upload',
@@ -9,6 +10,8 @@ import { ICustomer } from '../interfaces/customer';
   styleUrl: './file-upload.component.scss'
 })
 export class FileUploadComponent {
+  constructor(private customerDataService: CustomerDataService) { }
+
   rowData: ICustomer[] = [];
   onFileChange(event:any):void{
     const target= event.target as HTMLInputElement;
@@ -33,6 +36,9 @@ export class FileUploadComponent {
       // Convert sheet data to JSON
       this.rowData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
       console.log('Data from reading file:: ', this.rowData);
+
+      // Share data via service
+      this.customerDataService.setCustomerData(this.rowData); 
     };
 
     reader.readAsArrayBuffer(target.files[0]);
