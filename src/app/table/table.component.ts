@@ -21,12 +21,12 @@ export class TableComponent implements OnInit{
 
   // Column Definitions: Defines the columns to be displayed.
   colDefs: ColDef<ICustomer>[] = [
-    { field: 'Customer Name', headerName: 'Customer Name' },
-    { field: 'Account Number', headerName: 'Account Number' },
-    { field: 'Account Type', headerName: 'Account Type' },
-    { field: 'Balance', headerName: 'Balance', type: 'numericColumn' },
-    { field: 'Risk Score', headerName: 'Risk Score', type: 'numericColumn' },
-    { field: 'Last Review Date', headerName: 'Last Review Date' },
+    { field: 'Customer Name', headerName: 'Customer Name', sortable: true, filter: true },
+    { field: 'Account Number', headerName: 'Account Number',sortable: true, filter: true  },
+    { field: 'Account Type', headerName: 'Account Type',sortable: true, filter: true  },
+    { field: 'Balance', headerName: 'Balance', type: 'numericColumn',sortable: true, filter: true  },
+    { field: 'Risk Score', headerName: 'Risk Score', type: 'numericColumn',sortable: true, filter: true  },
+    { field: 'Last Review Date', headerName: 'Last Review Date',sortable: true, filter: true  },
   ];
 
   constructor(private customerDataService: CustomerDataService){}
