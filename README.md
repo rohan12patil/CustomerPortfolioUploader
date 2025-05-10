@@ -1,6 +1,9 @@
 # CustomerPortfolioUploader
 
-npm install ag-grid-angular
+AG Grid
+  npm install ag-grid-angular
+
+
 
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.11.
