@@ -17,7 +17,7 @@ ModuleRegistry.registerModules([AllEnterpriseModule]);
 })
 export class TableComponent implements OnInit {
   @Input() rowData: ICustomer[] = [];
-
+  private gridApi!: GridApi;
   gridOptions: GridOptions = {
     rowGroupPanelShow: 'always', // Always show the grouping panel
     pivotPanelShow: 'always',
@@ -94,5 +94,45 @@ export class TableComponent implements OnInit {
       this.rowData = data;
       console.log('Data from service:: ', this.rowData);
     });
+  }
+
+  onGridReady(params: any): void {
+    this.gridApi = params.api; // Store the Grid API reference
+  }
+
+  saveColumnState(): void {
+    const columnState = this.gridApi.getColumnState();
+    localStorage.setItem('columnState', JSON.stringify(columnState));
+    localStorage.setItem('rowData', JSON.stringify(this.rowData)); // Save row data
+    alert('Column state & row data saved!');
+  }
+
+  restoreColumnState(): void {
+    const columnState = localStorage.getItem('columnState');
+    const rowData = localStorage.getItem('rowData');
+
+    if (columnState) {
+      const parsedState = JSON.parse(columnState);
+      const success = this.gridApi.applyColumnState({
+        state: parsedState,
+        applyOrder: true,
+      });
+
+      if (success) {
+        alert('Column state restored successfully!');
+      } else {
+        alert('Failed to restore column state.');
+      }
+    } else {
+      alert('No saved column state found.');
+    }
+
+    if (rowData) {
+      this.rowData = JSON.parse(rowData); // Restore row data
+      this.gridApi.applyTransaction({ update: this.rowData }); // Update the grid with restored data
+      alert('Row data restored successfully!');
+    } else {
+      alert('No saved row data found.');
+    }
   }
 }
