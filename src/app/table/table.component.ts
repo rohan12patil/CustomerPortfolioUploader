@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, GridApi } from 'ag-grid-community';
+import type { ColDef, GridApi, GridOptions } from 'ag-grid-community';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { ICustomer } from '../interfaces/customer';
 import { CustomerDataService } from '../customer-data.service';
@@ -18,36 +18,34 @@ ModuleRegistry.registerModules([AllEnterpriseModule]);
 export class TableComponent implements OnInit {
   @Input() rowData: ICustomer[] = [];
 
+  gridOptions: GridOptions = {
+    rowGroupPanelShow: 'always', // Always show the grouping panel
+    pivotPanelShow: 'always',
+    defaultColDef: {
+      sortable: true, // Enable sorting by default
+      filter: true, // Enable filtering by default
+      resizable: true, // Allow column resizing
+      enableRowGroup: true, // Allow row grouping
+    },
+  };
   // Column Definitions: Defines the columns to be displayed.
   colDefs: ColDef<ICustomer>[] = [
     {
       field: 'Customer Name',
       headerName: 'Customer Name',
-      sortable: true,
-      filter: true,
-      enableRowGroup: true,
     },
     {
       field: 'Account Number',
       headerName: 'Account Number',
-      sortable: true,
-      filter: true,
-      enableRowGroup: true,
     },
     {
       field: 'Account Type',
       headerName: 'Account Type',
-      sortable: true,
-      filter: true,
-      enableRowGroup: true,
     },
     {
       field: 'Balance',
       headerName: 'Balance',
       type: 'numericColumn',
-      sortable: true,
-      filter: true,
-      enableRowGroup: true,
       editable: true,
       valueSetter: (params) => {
         const value = parseFloat(params.newValue);
@@ -63,9 +61,6 @@ export class TableComponent implements OnInit {
       field: 'Risk Score',
       headerName: 'Risk Score',
       type: 'numericColumn',
-      sortable: true,
-      filter: true,
-      enableRowGroup: true,
       editable: true,
       cellEditor: 'agTextCellEditor',
       valueSetter: (params) => {
@@ -81,13 +76,10 @@ export class TableComponent implements OnInit {
     {
       field: 'Last Review Date',
       headerName: 'Last Review Date',
-      sortable: true,
-      filter: true,
-      enableRowGroup: true,
       cellEditor: 'agDateCellEditor',
       cellEditorParams: {
-        min:'2020-01-01',
-        max:'2030-12-31',
+        min: '2020-01-01',
+        max: '2030-12-31',
         format: 'YYYY-MM-DD',
         dateFormat: 'DD-MM-YYYY',
       },
