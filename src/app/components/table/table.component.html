@@ -1,14 +1,7 @@
 <div style="margin-top: 10px;">
-  <button (click)="saveColumnState()">Save Column State</button>
-  <button (click)="restoreColumnState()">Restore Column State</button>
+  <button class="ag-grid-button" (click)="saveState()">Save Grid State</button>
+  <button class="ag-grid-button" (click)="restoreState()">Restore Grid State</button>
 </div>
-<ag-grid-angular
-class="ag-theme-alpine"
-style="width: 100%; height: 100%"
-[rowData]="rowData"
-[columnDefs]="colDefs"
-[gridOptions]="gridOptions"
-(gridReady)="onGridReady($event)"
-/>
-
-
+<br />
+<ag-grid-angular class="ag-theme-alpine" style="width: 100%; height: calc(100vh - 200px)" [rowData]="rowData"
+  [columnDefs]="colDefs" [gridOptions]="gridOptions" (gridReady)="onGridReady($event)" />

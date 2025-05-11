@@ -1,10 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridApi, GridOptions } from 'ag-grid-community';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import { ICustomer } from '../models/customer';
-import { CustomerDataService } from '../customer-data.service';
 import { RowGroupingModule, AllEnterpriseModule } from 'ag-grid-enterprise';
+import { ICustomer } from '../../models/customer';
+import { CustomerDataService } from '../../services/customer-data.service';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllEnterpriseModule]);
@@ -12,23 +12,24 @@ ModuleRegistry.registerModules([AllEnterpriseModule]);
 @Component({
   selector: 'app-table',
   imports: [AgGridAngular],
+  standalone: true,
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
 })
 export class TableComponent implements OnInit {
-  @Input() rowData: ICustomer[] = [];
+  rowData: ICustomer[] = [];
   private gridApi!: GridApi;
   gridOptions: GridOptions = {
-    rowGroupPanelShow: 'always', // Always show the grouping panel
+    rowGroupPanelShow: 'always',
     pivotPanelShow: 'always',
     defaultColDef: {
-      sortable: true, // Enable sorting by default
-      filter: true, // Enable filtering by default
-      resizable: true, // Allow column resizing
-      enableRowGroup: true, // Allow row grouping
+      sortable: true,
+      filter: true,
+      resizable: true,
+      enableRowGroup: true,
     },
   };
-  // Column Definitions: Defines the columns to be displayed.
+
   colDefs: ColDef<ICustomer>[] = [
     {
       field: 'Customer Name',
@@ -51,6 +52,7 @@ export class TableComponent implements OnInit {
         const value = parseFloat(params.newValue);
         if (value >= 0) {
           params.data['Balance'] = value;
+          this.customerDataService.setCustomerData(this.rowData); // Save changes
           return true;
         }
         alert('Balance must be greater than or equal to 0.');
@@ -67,6 +69,7 @@ export class TableComponent implements OnInit {
         const value = parseInt(params.newValue, 10);
         if (value >= 1 && value <= 5) {
           params.data['Risk Score'] = value;
+          this.customerDataService.setCustomerData(this.rowData); // Save changes
           return true;
         }
         alert('Risk Score must be between 1 and 5.');
@@ -76,6 +79,7 @@ export class TableComponent implements OnInit {
     {
       field: 'Last Review Date',
       headerName: 'Last Review Date',
+      editable: true,
       cellEditor: 'agDateCellEditor',
       cellEditorParams: {
         min: '2020-01-01',
@@ -83,56 +87,43 @@ export class TableComponent implements OnInit {
         format: 'YYYY-MM-DD',
         dateFormat: 'DD-MM-YYYY',
       },
+      valueSetter: (params) => {
+        params.data['Last Review Date'] = params.newValue;
+        this.customerDataService.setCustomerData(this.rowData); // Save changes
+        return true;
+      },
     },
   ];
 
   constructor(private customerDataService: CustomerDataService) {}
 
   ngOnInit(): void {
-    // Subscribe to the customer data service to get the latest data
     this.customerDataService.customerData$.subscribe((data: ICustomer[]) => {
+      if (this.gridApi) {
+        // Use applyTransaction for updating data
+        this.gridApi.applyTransaction({ update: data });
+      }
       this.rowData = data;
-      console.log('Data from service:: ', this.rowData);
     });
   }
 
   onGridReady(params: any): void {
-    this.gridApi = params.api; // Store the Grid API reference
-  }
-
-  saveColumnState(): void {
-    const columnState = this.gridApi.getColumnState();
-    localStorage.setItem('columnState', JSON.stringify(columnState));
-    localStorage.setItem('rowData', JSON.stringify(this.rowData)); // Save row data
-    alert('Column state & row data saved!');
-  }
-
-  restoreColumnState(): void {
-    const columnState = localStorage.getItem('columnState');
-    const rowData = localStorage.getItem('rowData');
-
-    if (columnState) {
-      const parsedState = JSON.parse(columnState);
-      const success = this.gridApi.applyColumnState({
-        state: parsedState,
-        applyOrder: true,
-      });
-
-      if (success) {
-        alert('Column state restored successfully!');
-      } else {
-        alert('Failed to restore column state.');
-      }
-    } else {
-      alert('No saved column state found.');
+    this.gridApi = params.api;
+    // Attempt to restore state when grid is ready
+    const savedData = this.customerDataService.restoreState();
+    if (savedData) {
+      this.gridApi.applyTransaction({ update: savedData });
     }
+  }
 
-    if (rowData) {
-      this.rowData = JSON.parse(rowData); // Restore row data
-      this.gridApi.applyTransaction({ update: this.rowData }); // Update the grid with restored data
-      alert('Row data restored successfully!');
-    } else {
-      alert('No saved row data found.');
+  saveState(): void {
+    this.customerDataService.setCustomerData(this.rowData);
+  }
+
+  restoreState(): void {
+    const savedData = this.customerDataService.restoreState();
+    if (savedData) {
+      this.gridApi.applyTransaction({ update: savedData });
     }
   }
 }

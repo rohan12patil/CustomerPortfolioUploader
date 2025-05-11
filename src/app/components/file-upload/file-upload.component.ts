@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { ICustomer } from '../../models/customer';
-import { CustomerDataService } from '../../customer-data.service';
+import { CustomerDataService } from '../../services/customer-data.service';
 
 @Component({
   selector: 'app-file-upload',
   imports: [],
+  standalone: true,
   templateUrl: './file-upload.component.html',
   styleUrl: './file-upload.component.scss',
 })
