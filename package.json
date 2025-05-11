@@ -22,6 +22,7 @@
     "@ngrx/store-devtools": "^19.1.0",
     "ag-grid-angular": "^33.2.4",
     "ag-grid-enterprise": "^33.2.4",
+    "date-fns": "^4.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "xlsx": "^0.18.5",

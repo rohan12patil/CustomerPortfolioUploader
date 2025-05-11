@@ -5,10 +5,33 @@ import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { RowGroupingModule, AllEnterpriseModule } from 'ag-grid-enterprise';
 import { ICustomer } from '../../models/customer';
 import { CustomerDataService } from '../../services/customer-data.service';
+import { addDays, format, isValid, parseISO } from 'date-fns';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllEnterpriseModule]);
 
+
+export function getDateFromExcel(excelDate: number | string): Date | null {
+  // Excel dates are number of days since 1900-01-01
+  // with 1900 incorrectly treated as leap year
+  const EXCEL_EPOCH = new Date(1899, 11, 31);
+
+  // Convert string to number if needed
+  const numericDate =
+    typeof excelDate === 'string' ? parseInt(excelDate, 10) : excelDate;
+
+  if (isNaN(numericDate)) return null;
+
+  // Add days to epoch date
+  const date = addDays(EXCEL_EPOCH, numericDate);
+
+  return isValid(date) ? date : null;
+}
+
+export function formatDate(date: Date | null): string {
+  if (!date || !isValid(date)) return '';
+  return format(date, 'dd/MM/yyyy');
+}
 @Component({
   selector: 'app-table',
   imports: [AgGridAngular],
@@ -80,18 +103,39 @@ export class TableComponent implements OnInit {
       field: 'Last Review Date',
       headerName: 'Last Review Date',
       editable: true,
+      type: ['dateString', 'dateColumn'],
       cellEditor: 'agDateCellEditor',
       cellEditorParams: {
-        min: '2020-01-01',
-        max: '2030-12-31',
-        format: 'YYYY-MM-DD',
-        dateFormat: 'DD-MM-YYYY',
+        browserDatePicker: true
       },
       valueSetter: (params) => {
         params.data['Last Review Date'] = params.newValue;
+        console.log('DATEW:: ',params.newValue);
         this.customerDataService.setCustomerData(this.rowData); // Save changes
         return true;
+      },      
+      valueFormatter: (params) => {
+        if (!params.value) return '';
+        const date = getDateFromExcel(params.value);
+        return formatDate(date);
       },
+      valueParser: (params) => {
+        if (!params.newValue) return '';
+        // Handle both Excel serial numbers and date strings
+        const date = isNaN(Number(params.newValue)) ? parseISO(params.newValue): getDateFromExcel(params.newValue);
+        
+        return date && isValid(date) ? date.toISOString().split('T')[0] : '';
+      },
+      filterParams: {
+        browserDatePicker: true,
+        comparator: (filterDate: string, cellValue: string) => {
+          const filterDateObj = parseISO(filterDate);
+          const cellDate = getDateFromExcel(cellValue);
+          
+          if (!isValid(filterDateObj) || !cellDate) return 0;
+          return cellDate.getTime() - filterDateObj.getTime();
+        }
+      }
     },
   ];
 
@@ -126,4 +170,5 @@ export class TableComponent implements OnInit {
       this.gridApi.applyTransaction({ update: savedData });
     }
   }
+
 }
