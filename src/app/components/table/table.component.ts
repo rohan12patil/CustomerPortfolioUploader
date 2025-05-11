@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridApi, GridOptions } from 'ag-grid-community';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import { ICustomer } from '../interfaces/customer';
+import { ICustomer } from '../models/customer';
 import { CustomerDataService } from '../customer-data.service';
 import { RowGroupingModule, AllEnterpriseModule } from 'ag-grid-enterprise';
 

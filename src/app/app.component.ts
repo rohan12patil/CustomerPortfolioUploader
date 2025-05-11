@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import { FileUploadComponent } from "./file-upload/file-upload.component";
-import { TableComponent } from "./table/table.component";
+import { FileUploadComponent } from './components/file-upload/file-upload.component';
+import { TableComponent } from './table/table.component';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -10,7 +10,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   selector: 'app-root',
   imports: [RouterOutlet, FileUploadComponent, TableComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   title = 'customer-portfolio-uploader';
