@@ -1,18 +1,22 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import { Component, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import * as CustomerActions from './store/customer.actions';
 import { FileUploadComponent } from './components/file-upload/file-upload.component';
 import { TableComponent } from './components/table/table.component';
 
-
-// Register all Community features
-ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FileUploadComponent, TableComponent],
+  standalone: true,
+  imports: [FileUploadComponent, TableComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  styleUrl: './app.component.scss', 
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  constructor(private store: Store) {}
   title = 'customer-portfolio-uploader';
+
+  ngOnInit() {
+    // Try to restore any saved state when the app starts
+    this.store.dispatch(CustomerActions.restoreCustomers());
+  }
 }

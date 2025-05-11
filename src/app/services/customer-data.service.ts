@@ -1,30 +1,30 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { ICustomer } from '../models/customer';
+import * as CustomerActions from '../store/customer.actions';
+import * as CustomerSelectors from '../store/customer.selectors';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CustomerDataService {
-  private customerDataSubject = new BehaviorSubject<ICustomer[]>([]);
-  customerData$ = this.customerDataSubject.asObservable();
+  customerData$!: Observable<ICustomer[]>;
 
-  setCustomerData(data: ICustomer[]) {
-    this.customerDataSubject.next(data);
-    this.saveState(data);
+  constructor(private store: Store) {
+    this.customerData$ = this.store.select(CustomerSelectors.selectCustomers);
+  }
+  
+
+  updateCustomer(customer: ICustomer) {
+    this.store.dispatch(CustomerActions.updateCustomer({ customer }));
   }
 
   saveState(data: ICustomer[]) {
-    localStorage.setItem('customerData', JSON.stringify(data));
+    this.store.dispatch(CustomerActions.saveCustomers({ customers: data }));
   }
 
-  restoreState(): ICustomer[] | null {
-    const savedData = localStorage.getItem('customerData');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData) as ICustomer[];
-      this.customerDataSubject.next(parsedData);
-      return parsedData;
-    }
-    return null;
+  restoreState() {
+    this.store.dispatch(CustomerActions.restoreCustomers());
   }
 }

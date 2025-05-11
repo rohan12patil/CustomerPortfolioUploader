@@ -1,37 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, GridApi, GridOptions } from 'ag-grid-community';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import { RowGroupingModule, AllEnterpriseModule } from 'ag-grid-enterprise';
+import {
+  ColDef,
+  GridApi,
+  GridOptions,
+  ValueSetterParams,
+} from 'ag-grid-community';
+import { ModuleRegistry } from 'ag-grid-community';
+import { AllEnterpriseModule } from 'ag-grid-enterprise';
 import { ICustomer } from '../../models/customer';
-import { CustomerDataService } from '../../services/customer-data.service';
 import { addDays, format, isValid, parseISO } from 'date-fns';
+import { Store } from '@ngrx/store';
+import * as CustomerActions from '../../store/customer.actions';
+import * as CustomerSelectors from '../../store/customer.selectors';
+import { getDateFromExcel,getExcelSerialDate } from '../../utlis/excel-date.util';
+import * as XLSX from 'xlsx';
 
-// Register all Community features
 ModuleRegistry.registerModules([AllEnterpriseModule]);
 
 
-export function getDateFromExcel(excelDate: number | string): Date | null {
-  // Excel dates are number of days since 1900-01-01
-  // with 1900 incorrectly treated as leap year
-  const EXCEL_EPOCH = new Date(1899, 11, 31);
 
-  // Convert string to number if needed
-  const numericDate =
-    typeof excelDate === 'string' ? parseInt(excelDate, 10) : excelDate;
 
-  if (isNaN(numericDate)) return null;
 
-  // Add days to epoch date
-  const date = addDays(EXCEL_EPOCH, numericDate);
 
-  return isValid(date) ? date : null;
-}
-
-export function formatDate(date: Date | null): string {
-  if (!date || !isValid(date)) return '';
-  return format(date, 'dd/MM/yyyy');
-}
 @Component({
   selector: 'app-table',
   imports: [AgGridAngular],
@@ -42,6 +33,7 @@ export function formatDate(date: Date | null): string {
 export class TableComponent implements OnInit {
   rowData: ICustomer[] = [];
   private gridApi!: GridApi;
+
   gridOptions: GridOptions = {
     rowGroupPanelShow: 'always',
     pivotPanelShow: 'always',
@@ -53,33 +45,40 @@ export class TableComponent implements OnInit {
     },
   };
 
-  colDefs: ColDef<ICustomer>[] = [
-    {
-      field: 'Customer Name',
-      headerName: 'Customer Name',
-    },
-    {
-      field: 'Account Number',
-      headerName: 'Account Number',
-    },
-    {
-      field: 'Account Type',
-      headerName: 'Account Type',
-    },
+  colDefs: ColDef[] = [
+    { field: 'Customer Name', headerName: 'Customer Name' },
+    { field: 'Account Number', headerName: 'Account Number' },
+    { field: 'Account Type', headerName: 'Account Type' },
     {
       field: 'Balance',
       headerName: 'Balance',
       type: 'numericColumn',
       editable: true,
-      valueSetter: (params) => {
-        const value = parseFloat(params.newValue);
-        if (value >= 0) {
-          params.data['Balance'] = value;
-          this.customerDataService.setCustomerData(this.rowData); // Save changes
-          return true;
+      cellStyle: { textAlign: 'right' },
+      valueParser: (params) => {
+        const parsed = parseFloat(params.newValue);
+        return isNaN(parsed) ? null : parsed;
+      },
+      valueSetter: (params: ValueSetterParams) => {
+        const value = params.newValue;
+        if (value === null || value < 0) {
+          alert('Balance must be a positive number');
+          return false;
         }
-        alert('Balance must be greater than or equal to 0.');
-        return false;
+
+        const newData: ICustomer = {
+          'Customer Name': params.data['Customer Name'],
+          'Account Number': params.data['Account Number'],
+          'Account Type': params.data['Account Type'],
+          Balance: value,
+          'Risk Score': params.data['Risk Score'],
+          'Last Review Date': params.data['Last Review Date'],
+        };
+
+        this.store.dispatch(
+          CustomerActions.updateCustomer({ customer: newData })
+        );
+        return true;
       },
     },
     {
@@ -87,88 +86,157 @@ export class TableComponent implements OnInit {
       headerName: 'Risk Score',
       type: 'numericColumn',
       editable: true,
-      cellEditor: 'agTextCellEditor',
-      valueSetter: (params) => {
-        const value = parseInt(params.newValue, 10);
-        if (value >= 1 && value <= 5) {
-          params.data['Risk Score'] = value;
-          this.customerDataService.setCustomerData(this.rowData); // Save changes
-          return true;
+      cellStyle: { textAlign: 'right' },
+      valueParser: (params) => {
+        const parsed = parseInt(params.newValue, 10);
+        return isNaN(parsed) ? null : parsed;
+      },
+      valueSetter: (params: ValueSetterParams) => {
+        const value = params.newValue;
+        if (value === null || value < 1 || value > 5) {
+          alert('Risk Score must be between 1 and 5');
+          return false;
         }
-        alert('Risk Score must be between 1 and 5.');
-        return false;
+
+        const newData: ICustomer = {
+          'Customer Name': params.data['Customer Name'],
+          'Account Number': params.data['Account Number'],
+          'Account Type': params.data['Account Type'],
+          Balance: params.data['Balance'],
+          'Risk Score': value,
+          'Last Review Date': params.data['Last Review Date'],
+        };
+
+        this.store.dispatch(
+          CustomerActions.updateCustomer({ customer: newData })
+        );
+        return true;
       },
     },
     {
       field: 'Last Review Date',
       headerName: 'Last Review Date',
       editable: true,
-      type: ['dateString', 'dateColumn'],
-      cellEditor: 'agDateCellEditor',
+      type: 'dateString',
+      cellEditor: 'agDateStringCellEditor',
       cellEditorParams: {
-        browserDatePicker: true
+        browserDatePicker: true,
       },
-      valueSetter: (params) => {
-        params.data['Last Review Date'] = params.newValue;
-        console.log('DATEW:: ',params.newValue);
-        this.customerDataService.setCustomerData(this.rowData); // Save changes
-        return true;
-      },      
       valueFormatter: (params) => {
         if (!params.value) return '';
+        // const date = getDateFromExcel(params.value);
         const date = getDateFromExcel(params.value);
-        return formatDate(date);
+        return date ? format(date, 'dd/MM/yyyy') : '';
+        // return formatDate(date);
       },
       valueParser: (params) => {
         if (!params.newValue) return '';
-        // Handle both Excel serial numbers and date strings
-        const date = isNaN(Number(params.newValue)) ? parseISO(params.newValue): getDateFromExcel(params.newValue);
-        
-        return date && isValid(date) ? date.toISOString().split('T')[0] : '';
+        // Parse the date and convert to ISO string format
+        const date = new Date(params.newValue);
+        if (isNaN(date.getTime())) return '';
+        return date.toISOString().split('T')[0];
       },
       filterParams: {
         browserDatePicker: true,
         comparator: (filterDate: string, cellValue: string) => {
           const filterDateObj = parseISO(filterDate);
           const cellDate = getDateFromExcel(cellValue);
-          
+
           if (!isValid(filterDateObj) || !cellDate) return 0;
           return cellDate.getTime() - filterDateObj.getTime();
-        }
-      }
+        },
+      },
+      valueSetter: (params) => {
+        // if (!params.newValue) {
+        //   return false;
+        // }
+        // console.log(params)
+        // params.data['Last Review Date'] = params.newValue;
+        // const newData: ICustomer = {
+        //   'Customer Name': params.data['Customer Name'],
+        //   'Account Number': params.data['Account Number'],
+        //   'Account Type': params.data['Account Type'],
+        //   Balance: params.data['Balance'],
+        //   'Risk Score': params.data['Risk Score'],
+        //   'Last Review Date': params.newValue,
+        // };
+
+        // this.store.dispatch(
+        //   CustomerActions.updateCustomer({ customer: newData })
+        // );
+        // return true;
+        if (!params.newValue) return false;
+
+        const updatedCustomer: ICustomer = {
+          ...params.data, // clone the existing object
+          'Last Review Date': params.newValue, // override the date
+        };
+
+        // Dispatch the update
+        this.store.dispatch(
+          CustomerActions.updateCustomer({ customer: updatedCustomer })
+        );
+        return true;
+      },
+      // valueGetter: (params) => {
+      //   return params.data['Last Review Date']
+      //     ? new Date(params.data['Last Review Date'])
+      //     : null;
+      // },
     },
   ];
 
-  constructor(private customerDataService: CustomerDataService) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.customerDataService.customerData$.subscribe((data: ICustomer[]) => {
-      if (this.gridApi) {
-        // Use applyTransaction for updating data
-        this.gridApi.applyTransaction({ update: data });
-      }
-      this.rowData = data;
-    });
+    this.store
+      .select(CustomerSelectors.selectCustomers)
+      .subscribe((customers: ICustomer[]) => {
+        if (customers && customers.length > 0) {
+          this.rowData = [...customers];
+          if (this.gridApi) {
+            this.gridApi.applyTransaction({ update: this.rowData });
+          }
+        }
+      });
   }
 
-  onGridReady(params: any): void {
+  onGridReady(params: { api: GridApi }): void {
     this.gridApi = params.api;
-    // Attempt to restore state when grid is ready
-    const savedData = this.customerDataService.restoreState();
-    if (savedData) {
-      this.gridApi.applyTransaction({ update: savedData });
-    }
+    this.store.dispatch(CustomerActions.loadCustomers());
   }
 
   saveState(): void {
-    this.customerDataService.setCustomerData(this.rowData);
-  }
-
-  restoreState(): void {
-    const savedData = this.customerDataService.restoreState();
-    if (savedData) {
-      this.gridApi.applyTransaction({ update: savedData });
+    if (this.gridApi) {
+      const customers = this.rowData;
+      this.store.dispatch(CustomerActions.saveCustomers({ customers }));
     }
   }
 
+  restoreState(): void {
+    this.store.dispatch(CustomerActions.restoreCustomers());
+  }
+
+  exportToExcel0(): void {
+    if (this.gridApi) {
+      this.gridApi.exportDataAsExcel({
+        fileName: 'customers-export.xlsx', // Set file name
+      });
+    }
+  }
+
+  exportToExcel(): void {
+    const customers = this.rowData;
+    const dataToExport = customers.map((customer) => ({
+      ...customer,
+      'Last Review Date': customer['Last Review Date']
+        ? getExcelSerialDate(new Date(customer['Last Review Date']))
+        : '',
+    }));
+  
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Customers');
+    XLSX.writeFile(wb, 'customers_export.xlsx');
+  }
 }
