@@ -1,65 +1,65 @@
+
 # CustomerPortfolioUploader
 
-AG Grid
-  npm install ag-grid-angular
+🔗 [Live Demo](https://customer-portfolio-uploader.netlify.app/)
+
+https://customer-portfolio-uploader.netlify.app/
+
+Please use the `customer.xlsx` file to upload data.
+
+## Overview
+
+This app allows users to upload an Excel file, view and interact with the parsed data using AG Grid, and manage edits with a centralized store using NgRx.
+
+🔧 Features
+📁 Excel Upload: Import customer data from an Excel file.
+
+📊 AG Grid Display: Parsed data is rendered inside AG Grid with advanced features.
+
+🧮 Grid Functionality
+✏️ Inline Editing:
+
+Editable fields: Risk Score, Balance, and Last Review Date
+
+🔍 Filtering & Sorting: Available on all columns.
+
+🧩 Dynamic Grouping / Pivoting: Group by any column via drag-and-drop.
+
+💾 Column State Persistence: Save and restore user preferences (e.g., column order, visibility, width).
+
+✅ Validation Rules:
+
+Risk Score must be between 1–5
+
+Balance must be ≥ 0
+
+🗃️ State Management
+⚡ NgRx Store + Effects (Angular):
+
+Centralized state for uploaded and edited data
+
+Track which rows have been modified
+
+Display total row count and number of unsaved edits
+
+Save or restore data via actions
+
+Defer backend save until user clicks Save
+
+✨ Bonus Features
+🌙 Dark Mode Toggle
+
+📤 Export Edited Data to Excel
+
+🛠️ Tech Stack
+Angular
+
+NgRx (Store + Effects)
+
+AG Grid Enterprise
+
+Angular Material
 
 
 
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.11.
-
-## Development server
-
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
