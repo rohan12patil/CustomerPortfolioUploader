@@ -1,4 +1,30 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.dark-theme {
+  .mat-mdc-raised-button {
+    background-color: #424242;
+    color: white;
+  }
+  
+  .mat-mdc-card {
+    background-color: #424242;
+    color: white;
+  }
+  
+  .ag-theme-alpine {
+    --ag-background-color: #303030;
+    --ag-header-background-color: #424242;
+    --ag-odd-row-background-color: #383838;
+    --ag-header-foreground-color: #fff;
+    --ag-foreground-color: #fff;
+    --ag-row-border-color: #424242;
+  }
+}

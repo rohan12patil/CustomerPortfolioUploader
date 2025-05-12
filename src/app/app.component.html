@@ -1,6 +1,10 @@
-<div class="app-container">
+<div class="app-container" [class.dark-theme]="isDarkMode">
   <mat-toolbar color="primary">
     <span>{{title}}</span>
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="toggleDarkMode()">
+      <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
   </mat-toolbar>
 
   <div class="content">
@@ -8,4 +12,3 @@
     <app-table></app-table>
   </div>
 </div>
-

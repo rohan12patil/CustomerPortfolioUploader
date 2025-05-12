@@ -1,15 +1,27 @@
 .app-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  
+  &.dark-theme {
+    background-color: #303030;
+    color: #ffffff;
+    
+    mat-toolbar {
+      background-color: #424242;
+    }
+    
+    .content {
+      background-color: #303030;
+    }
+  }
+}
+
+.spacer {
+  flex: 1 1 auto;
 }
 
 .content {
-  flex: 1;
-  overflow: auto;
   padding: 20px;
-}
-
-mat-toolbar {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  
+  transition: background-color 0.3s ease;
 }
