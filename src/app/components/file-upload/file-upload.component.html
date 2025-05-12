@@ -1,4 +1,18 @@
-<div>
-  <input type="file" (change)="onFileChange($event)" accept=".xlsx, .xls" />
-  <button (click)="onFileChange($event)">Upload</button>
+<div class="upload-container">
+  <mat-card>
+    <mat-card-content>
+      <div class="upload-area">
+        <input #fileInput type="file" accept=".xlsx,.xls" (change)="onFileChange($event)" style="display: none" />
+        <div class="upload-buttons">
+          <button mat-raised-button color="primary" (click)="fileInput.click()">
+            <mat-icon>upload_file</mat-icon>
+            Choose Excel File
+          </button>
+          @if (selectedFile) {
+          <span class="file-name">{{ selectedFile.name }}</span>
+          }
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

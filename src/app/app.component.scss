@@ -1,0 +1,15 @@
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+}
+
+mat-toolbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  
+}

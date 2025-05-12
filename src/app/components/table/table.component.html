@@ -1,14 +1,31 @@
-<div style="margin-top: 10px;">
-  <button class="ag-grid-button" (click)="saveState()">Save Grid State</button>
-  <button class="ag-grid-button" (click)="restoreState()">Restore Grid State</button>
-  <button (click)="exportToExcel()">Export to Excel</button>
+<div class="grid-container">
+ 
+
+  <!-- Info panel -->
+  <div class="info-panel">
+    <p><strong>Total Records:</strong> {{ rowData.length }}</p>
+    <p><strong>Unsaved Edits:</strong> {{ unsavedCount }}</p>
+  </div>
+
+  
+  <!-- Export and Submit buttons -->
+  <div class="action-buttons">
+    <button mat-raised-button color="primary" (click)="saveState()" [disabled]="!unsavedCount">
+      Save State
+    </button>
+    <button mat-raised-button color="accent" (click)="restoreState()">
+      Restore State
+    </button>
+    <button mat-stroked-button color="primary" (click)="exportToExcel()">
+      Export to Excel
+    </button>
+    <button mat-stroked-button color="warn" (click)="submitChanges()" >
+      Submit 
+    </button>
+  </div>
+
+  <!-- AG Grid -->
+  <ag-grid-angular class="ag-theme-alpine" [rowData]="rowData" [columnDefs]="colDefs" [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)"  (cellValueChanged)="onCellValueChanged($event)">
+  </ag-grid-angular>
 </div>
-<br />
-<ag-grid-angular 
-  class="ag-theme-alpine" 
-  style="width: 100%; height: calc(100vh - 200px)" 
-  [rowData]="rowData"
-  [columnDefs]="colDefs" 
-  [gridOptions]="gridOptions"   
-  (gridReady)="onGridReady($event)"
-></ag-grid-angular>

@@ -1,25 +1,30 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { Store } from '@ngrx/store';
 import * as XLSX from 'xlsx';
 import { ICustomer } from '../../models/customer';
 import { CustomerDataService } from '../../services/customer-data.service';
 import * as CustomerActions from '../../store/customer.actions';
-import { Store } from '@ngrx/store';
 import { getDateFromExcel } from '../../utlis/excel-date.util';
 
 @Component({
   selector: 'app-file-upload',
-  imports: [],
+  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule],
   standalone: true,
   templateUrl: './file-upload.component.html',
   styleUrl: './file-upload.component.scss',
 })
 export class FileUploadComponent {
   constructor(
-    private customerDataService: CustomerDataService, 
+    private customerDataService: CustomerDataService,
     private store: Store
   ) {}
 
   customerData: ICustomer[] = [];
+  selectedFile: File | null = null;
 
   onFileChange(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -27,6 +32,7 @@ export class FileUploadComponent {
       alert('Please upload a single file.');
       return;
     }
+     this.selectedFile = target.files[0];
 
     const reader: FileReader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
@@ -48,7 +54,7 @@ export class FileUploadComponent {
 
       // Convert sheet data to JSON and validate the structure
       const excelData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-      
+
       // Validate and transform the data
       this.customerData = excelData.map((row: any) => {
         const rawDate = row['Last Review Date'];
@@ -64,12 +70,13 @@ export class FileUploadComponent {
             : new Date().toISOString().split('T')[0],
         };
       });
-      
 
       console.log('Processed Excel data:', this.customerData);
 
       // Dispatch the processed data to the store
-      this.store.dispatch(CustomerActions.saveCustomers({ customers: this.customerData }));
+      this.store.dispatch(
+        CustomerActions.saveCustomers({ customers: this.customerData })
+      );
     };
 
     reader.readAsArrayBuffer(target.files[0]);
